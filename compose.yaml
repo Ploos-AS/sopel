@@ -1,0 +1,10 @@
+services:
+  sopel:
+    image: ghcr.io/ploos-as/sopel:edge
+    container_name: sopel
+    restart: unless-stopped
+    environment:
+      SOPEL_CONFIG_DIR: /data
+      # SOPEL_CONFIG: default.cfg
+    volumes:
+      - ./data:/data
