@@ -1,0 +1,13 @@
+This repository contains container packaging maintained by Ploos AS.
+
+Sopel itself is developed by the Sopel project and is distributed under the
+Eiffel Forum License, version 2 (EFL-2.0). Upstream source and license text:
+
+https://github.com/sopel-irc/sopel
+https://github.com/sopel-irc/sopel/blob/v8.0.4/COPYING
+
+The container currently installs Sopel 8.0.4, corresponding to upstream commit:
+78e4a32bd63a2f220cdae3ac069584507e8ae9a1
+
+Ploos AS does not claim ownership of Sopel or affiliation with the upstream
+Sopel project.
