@@ -1,0 +1,18 @@
+[Unit]
+Description=Sopel IRC bot container
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=ghcr.io/ploos-as/sopel:edge
+ContainerName=sopel
+Volume=%h/.local/share/sopel:/data:Z
+Environment=SOPEL_CONFIG_DIR=/data
+# Environment=SOPEL_CONFIG=default.cfg
+
+[Service]
+Restart=on-failure
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target
