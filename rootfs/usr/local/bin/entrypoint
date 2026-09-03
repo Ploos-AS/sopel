@@ -1,0 +1,72 @@
+#!/bin/sh
+set -eu
+
+config_dir="${SOPEL_CONFIG_DIR:-/data}"
+
+idle_unconfigured() {
+    echo "Sopel is not configured yet." >&2
+    echo "Run the configuration wizard, then restart this container:" >&2
+    echo "  docker compose run --rm sopel configure" >&2
+    echo "or:" >&2
+    echo "  docker run --rm -it -v \"\$PWD/data:/data\" ghcr.io/ploos-as/sopel:edge configure" >&2
+    exec sleep infinity
+}
+
+resolve_config() {
+    if [ -n "${SOPEL_CONFIG:-}" ]; then
+        case "$SOPEL_CONFIG" in
+            /*) candidate="$SOPEL_CONFIG" ;;
+            *) candidate="$config_dir/$SOPEL_CONFIG" ;;
+        esac
+        if [ ! -f "$candidate" ]; then
+            echo "Configured SOPEL_CONFIG does not exist: $candidate" >&2
+            exit 64
+        fi
+        return 0
+    fi
+
+    if [ -f "$config_dir/default.cfg" ]; then
+        SOPEL_CONFIG=default.cfg
+        export SOPEL_CONFIG
+        return 0
+    fi
+
+    set -- "$config_dir"/*.cfg
+    if [ "$1" = "$config_dir/*.cfg" ]; then
+        return 1
+    fi
+
+    if [ "$#" -eq 1 ]; then
+        SOPEL_CONFIG="$(basename "$1")"
+        export SOPEL_CONFIG
+        return 0
+    fi
+
+    echo "Multiple Sopel configs found in $config_dir; set SOPEL_CONFIG explicitly:" >&2
+    for cfg in "$@"; do
+        echo "  $(basename "$cfg")" >&2
+    done
+    exec sleep infinity
+}
+
+case "${1:-run}" in
+    run)
+        shift || true
+        resolve_config || idle_unconfigured
+        exec sopel start --config-dir "$config_dir" -c "$SOPEL_CONFIG" "$@"
+        ;;
+    configure|wizard)
+        shift || true
+        exec sopel configure --config-dir "$config_dir" -c "${SOPEL_CONFIG:-default.cfg}" "$@"
+        ;;
+    shell)
+        shift || true
+        exec /bin/sh "$@"
+        ;;
+    -*)
+        exec sopel "$@"
+        ;;
+    *)
+        exec "$@"
+        ;;
+esac
